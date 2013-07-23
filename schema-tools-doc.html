@@ -1,0 +1,687 @@
+<html>
+<head>
+	<link rel="stylesheet" href="schema.css"/>
+</head>
+<title>SCHEMA Tools</title>
+<h1>SCHEMA Tools</h1>
+
+<h2><a name="top">Contents</a></h2>
+<ul>
+<li><a href="#get_started">Getting Started</a></li>
+<li><a href="#use_tools_quick">Using the Tools: Quick Start</a></li>
+<li><a href="#use_tools_example">Using the Tools: By Example</a></li>
+	<ul>
+	<li><a href="#gen_contacts">Generating a contact file</a></li>
+	<li><a href="#calc_energy">Calculating SCHEMA energies</a></li>
+	<li><a href="#enum_libs">Enumerating libraries</a></li>
+	<li><a href="#raspp">Computing optimal crossovers using RASPP</a></li>
+	</ul>
+<li><a href="#use_code">Using the SCHEMA Python modules</a></li>
+<li><a href="#references">References</a></li>
+</ul>
+
+
+<h2><a name="get_started">Getting Started</a></h2>
+<p>The tools in this distribution are written in <a href="http://www.python.org">Python</a> and allow you to perform several tasks:
+<ul>
+<li>Generate a contact map from a PDB file and an alignment of parent proteins</li>
+<li>Calculate SCHEMA energy <i>E</i> and mutation <i>m</i> for chimeras, or an entire combinatorial library, using a contact map</li>
+<li>Enumerate crossover points and compute average <i>&lt;E&gt;</i> and <i>&lt;m&gt;</i> for the resulting libraries</li>
+<li>Find crossover points predicted to optimize folded, diverse proteins using RASPP</li>
+</ul>
+</p>
+<p>Before you begin, you'll need to download and install <a href="http://www.python.org/download/">Python</a>.  The <a href="http://docs.python.org/tut/tut.html">Python tutorial</a> will get you started.  To run the SCHEMA tools, you need only be comfortable running Python scripts from the command line.</p>
+<p>You can <a href="http://www.che.caltech.edu/groups/fha/schema-tools/schema-tools.zip">download</a> the SCHEMA tools, example files and documentation <a href="http://www.che.caltech.edu/groups/fha/schema-tools/schema-tools.zip">here</a> (<500K zipped).</p>
+
+
+<h2><a name="use_tools_quick">Using the Tools: Quick Start</a></h2>
+<p>This section describes the options of the tools used to perform the tasks in the Getting Started section.  If you're unfamiliar with Python and/or command-line tools, you may want to skip to the <a href="#use_tools_example">By Example</a> section.</p>
+<p>The <code>schemacontacts</code> module has the following options:</p>
+<table class="commandTable">
+<tr>
+	<th class="commandOptionHeader">Option</th>
+	<th class="commandArgumentHeader">Argument</th>
+	<th class="commandExampleHeader">Example</th>
+	<th class="commandNotesHeader">Notes</th>
+</tr>
+<tr class="oddOption">
+	<td class="commandOption">-pdb</td>
+	<td>A PDB file</td>
+	<td class="commandOption">-pdb 1G68.pdb</td>
+	<td>Download these from the <a href="http://pdb.rcsb.org">Protein Data Bank</a>.</td>
+</tr>
+<tr class="evenOption">
+	<td class="commandOption">-msa</td>
+	<td>A multiple sequence alignment file</td>
+	<td class="commandOption">-msa lac-msa.txt</td>
+	<td>In ALN format, e.g. from <a href="http://www.ebi.ac.uk/clustalw/">ClustalW</a>.</td>
+</tr>
+<tr class="oddOption">
+	<td class="commandOption">-pdbal</td>
+	<td>A parent-PDB alignment file</td>
+	<td class="commandOption">-pdbal 1G68-PSE4.txt</td>
+	<td>(Optional) In ALN format.  If this argument is not provided, then the PDB file's ID (e.g., 1G68) will be extracted, and the sequence having that ID in the multiple sequence alignment file will be used.</td>
+</tr>
+<tr class="evenOption">
+	<td class="commandOption">-chains</td>
+	<td>The PDB chain identifiers</td>
+	<td class="commandOption">-chains A B</td>
+	<td>(Optional) Chains 'A' and ' ' are included by default.</td>
+</tr>
+<tr class="oddOption">
+	<td class="commandOption">-o</td>
+	<td>An output file</td>
+	<td class="commandOption">-o contacts.txt</td>
+	<td>(Optional) This file will be created or overwritten.</td>
+</tr>
+</table>
+
+<p>The <code>schemaenergy</code> module has the following options:</p>
+<table class="commandTable">
+<tr>
+	<th class="commandOptionHeader">Option</th>
+	<th class="commandArgumentHeader">Argument</th>
+	<th class="commandExampleHeader">Example</th>
+	<th class="commandNotesHeader">Notes</th>
+</tr>
+<tr class="oddOption">
+	<td class="commandOption">-msa</td>
+	<td>A multiple sequence alignment file</td>
+	<td class="commandOption">-msa lac-msa.txt</td>
+	<td>In ALN format, e.g. from <a href="http://www.ebi.ac.uk/clustalw/">ClustalW</a>.</td>
+</tr>
+<tr class="evenOption">
+	<td class="commandOption">-con</td>
+	<td>A contact file</td>
+	<td class="commandOption">-con contacts.txt</td>
+	<td>In the format output by <code>schemacontacts.py</a>.</td>
+</tr>
+<tr class="oddOption">
+	<td class="commandOption">-xo</td>
+	<td>A crossover file</td>
+	<td class="commandOption">-xo crossovers.txt</td>
+	<td>Whitespace-separated list of 1-based indices of fragment start-points.</td>
+</tr>
+<tr class="evenOption">
+	<td class="commandOption">-E</td>
+	<td>None</td>
+	<td class="commandOption">-E</td>
+	<td>(Optional) Disruption (<i>E</i>) values will be printed if this option is included.</td>
+</tr>
+<tr class="oddOption">
+	<td class="commandOption">-m</td>
+	<td>None</td>
+	<td class="commandOption">-m</td>
+	<td>(Optional) Mutation (<i>m</i>) values will be printed if this option is included.</td>
+</tr>
+<tr class="evenOption">
+	<td class="commandOption">-chim</td>
+	<td>Chimera, list of chimeras, or file</td>
+	<td class="commandOption">-chim 113311 222312<br/>-chim chimeras.txt</td>
+	<td>(Optional) If this option is not used, all possible chimeras will be evaluated.</td>
+</tr>
+<tr class="oddOption">
+	<td class="commandOption">-o</td>
+	<td>An output file</td>
+	<td class="commandOption">-o energies.txt</td>
+	<td>(Optional) This file will be created or overwritten.</td>
+</tr>
+</table>
+
+<p>The <code>schemarandom</code> module has the following options:</p>
+<table class="commandTable">
+<tr>
+	<th class="commandOptionHeader">Option</th>
+	<th class="commandArgumentHeader">Argument</th>
+	<th class="commandExampleHeader">Example</th>
+	<th class="commandNotesHeader">Notes</th>
+</tr>
+<tr class="oddOption">
+	<td class="commandOption">-msa</td>
+	<td>A multiple sequence alignment file</td>
+	<td class="commandOption">-msa lac-msa.txt</td>
+	<td>In ALN format, e.g. from <a href="http://www.ebi.ac.uk/clustalw/">ClustalW</a>.</td>
+</tr>
+<tr class="evenOption">
+	<td class="commandOption">-con</td>
+	<td>A contact file</td>
+	<td class="commandOption">-con contacts.txt</td>
+	<td>In the format output by <code>schemacontacts.py</a>.</td>
+</tr>
+<tr class="oddOption">
+	<td class="commandOption">-xo</td>
+	<td>The number of crossovers</td>
+	<td class="commandOption">-xo 7</td>
+	<td></td>
+</tr>
+<tr class="evenOption">
+	<td class="commandOption">-min</td>
+	<td>The minimum fragment length, in residues</td>
+	<td class="commandOption">-min 10</td>
+	<td>(Optional) Default minimum is 4.</td>
+</tr>
+<tr class="oddOption">
+	<td class="commandOption">-libs</td>
+	<td>The number of libraries to generate</td>
+	<td class="commandOption">-libs 10</td>
+	<td>(Optional) Default is 1000.</td>
+</tr>
+<tr class="evenOption">
+	<td class="commandOption">-chims</td>
+	<td>The number of chimeras to evaluate per library</td>
+	<td class="commandOption">-chims 200</td>
+	<td>(Optional) If this option is not used, all possible chimeras will be evaluated.</td>
+</tr>
+<tr class="oddOption">
+	<td class="commandOption">-seed</td>
+	<td>The random-number seed.</td>
+	<td class="commandOption">-seed 13</td>
+	<td>(Optional) The system time is used if this option is not set.</td>
+</tr>
+<tr class="evenOption">
+	<td class="commandOption">-o</td>
+	<td>An output file</td>
+	<td class="commandOption">-o averages.txt</td>
+	<td>(Optional) This file will be created or overwritten.</td>
+</tr>
+</table>
+
+<p>The <code>rasppcurve</code> module has the following options:</p>
+<table class="commandTable">
+<tr>
+	<th class="commandOptionHeader">Option</th>
+	<th class="commandArgumentHeader">Argument</th>
+	<th class="commandExampleHeader">Example</th>
+	<th class="commandNotesHeader">Notes</th>
+</tr>
+<tr class="oddOption">
+	<td class="commandOption">-msa</td>
+	<td>A multiple sequence alignment file</td>
+	<td class="commandOption">-msa lac-msa.txt</td>
+	<td>In ALN format, e.g. from <a href="http://www.ebi.ac.uk/clustalw/">ClustalW</a>.</td>
+</tr>
+<tr class="evenOption">
+	<td class="commandOption">-con</td>
+	<td>A contact file</td>
+	<td class="commandOption">-con contacts.txt</td>
+	<td>In the format output by <code>schemacontacts.py</a>.</td>
+</tr>
+<tr class="oddOption">
+	<td class="commandOption">-xo</td>
+	<td>The number of crossovers</td>
+	<td class="commandOption">-xo 7</td>
+	<td></td>
+</tr>
+<tr class="evenOption">
+	<td class="commandOption">-min</td>
+	<td>The minimum fragment length (minus invariant positions), in residues</td>
+	<td class="commandOption">-min 10</td>
+	<td>(Optional) Default minimum is 4.</td>
+</tr>
+<tr class="oddOption">
+	<td class="commandOption">-bin</td>
+	<td>The width of each average mutation bin</td>
+	<td class="commandOption">-bin 2</td>
+	<td>(Optional) Default bin width is 1.</td>
+</tr>
+<tr class="evenOption">
+	<td class="commandOption">-o</td>
+	<td>An output file</td>
+	<td class="commandOption">-o averages.txt</td>
+	<td>(Optional) This file will be created or overwritten.</td>
+</tr>
+</table>
+
+<h3>A typical session</h3>
+<p>A typical objective is to evaluate a recombination library generated from a set of known crossovers against libraries generated from randomly chosen crossovers and against optimized libraries generated by RASPP.  Here is what that session looks like.</p>
+<pre class="commandInput">
+	&gt; python schemacontacts.py -msa lac-msa.txt -pdb 1G68.pdb -pdbal PSE4-1G68.txt -o contacts.txt
+	&gt; python schemaenergy.py -msa lac-msa.txt -con contacts.txt -xo crossovers.txt -E -m -o energies.txt
+	&gt; python schemarandom.py -msa lac-msa.txt -con contacts.txt -xo 7 -libs 100 -chims 200 -o averages.txt
+	&gt; python rasppcurve.py -msa lac-msa.txt -con contacts.txt -xo 7 -o curve.txt	
+</pre>
+
+
+<h2><a name="use_tools_example">Using the Tools: By Example</a></h2>
+
+<p>This section describes how to use the SCHEMA tools by carrying out various examples using files we've provided.</p>
+<h3>Making a contact file</h3>
+<p>The script <code>schemacontacts.py</code> is used to generate a contact file.</p>
+<p>For many SCHEMA calculations, generating contacts is slow and need only be done once.  To generate a contact file, you must provide a structure (a PDB file), a multiple sequence alignment (MSA) of parental sequences, and an alignment of one parental sequence with the PDB sequence.  Alignments can be provided in ALN format (such as is produced by <a href="http://www.ebi.ac.uk/clustalw/">ClustalW</a>), without a header.</p>
+
+<h4>Files needed to generate a contact map</h4>
+<p>
+Before you begin, you must have two files, a parent alignment and a parent-PDB alignment.  The parent alignment file in these examples, <tt>lac-msa.txt</tt>, has the following format:
+<pre class="fileContents">
+	# Multiple sequence alignment for lactamases
+
+	PSE4            FQQVEQDVKAIEVSLSARIGVSVLDTQNG-EYWDYNGNQRFPLTSTFKTIACAKLLYDAE
+	SED1            VQQVQKKLAALEKQSGGRLGVALINTADN-SQVLYRADERFAMCSTSKVMTAAAVLKQSE
+	1BTL            HPETLVKVKDAEDQLGARVGYIELDLNSGKILESFRPEERFPMMSTFKVLLCGAVLSRID
+	                  :.  .:   * . ..*:*   ::  ..     :. ::**.: ** *.: .. :*   :
+
+	PSE4            QGKVNPNSTVEIKKADLVTYSPVIEKQVGQAITLDDACFATMTTSDNTAANIILSAVGGP
+	SED1            THDGILQQKMTIKKADLTNWNPVTEKYVGNTMTLAELSAATLQYSDNTAMNKLLAHLGGP
+	1BTL            AGQEQLGRRIHYSQNDLVEYSPVTEKHLTDGMTVRELCSAAITMSDNTAANLLLTTIGGP
+	                  .      :  .: **. :.** ** : : :*: : . *::  ***** * :*: :***
+
+	PSE4            KGVTDFLRQIGDKETRLDRIEPDLNEGKLGDLRDTTTPKAIASTLNKFLFGSALSEMNQK
+	SED1            GNVTAFARSIGDTTFRLDRKEPELNTAIPGDERDTTSPLAMAKSLRKLTLGDALAGPQRA
+	1BTL            KELTAFLHNMGDHVTRLDRWEPELNEAIPNDERDTTMPVAMATTLRKLLTGELLTLASRQ
+	                  :* * :.:**   **** **:** .  .* **** * *:*.:*.*:  *. *:  .: 
+	...
+</pre>
+</p>
+<p>Lines starting with "#" are comments and are ignored.  The parent-PDB alignment file has the same format:</p>
+<pre class="fileContents">
+	PSE4            --FQQVEQDVKAIEVSLSARIGVSVLDTQNG-EYWDYNGNQRFPLTSTFKTIACAKLLYD 57
+	1G68            SKFQQVEQDVKAIEVSLSARIGVSVLDTQNG-EYWDYNGNQRFPLTSTFKTIACAKLLYD 59
+	                  ***************************** ****************************
+
+	PSE4            AEQGKVNPNSTVEIKKADLVTYSPVIEKQVGQAITLDDACFATMTTSDNTAANIILSAVG 117
+	1G68            AEQGKVNPNSTVEIKKADLVTYSPVIEKQVGQAITLDDACFATMTTSDNTAANIILSAVG 119
+	                ************************************************************
+
+	PSE4            GPKGVTDFLRQIGDKETRLDRIEPDLNEGKLGDLRDTTTPKAIASTLNKFLFGSALSEMN 177
+	1G68            GPKGVTDFLRQIGDKETRLDRIEPDLNEGKLGDLRDTTTPKAIASTLNKFLFGSALSEMN 179
+	                ************************************************************
+	
+	...
+</pre>
+<p>Note that the program will ignore trailing numbers and sequence-similarity symbols.  (The parent sequence must have the same identifier, in this case PSE4, in both alignment files.)  As you can see, the PDB file contains two leading residues that our PSE4 protein lacks.  An alignment is needed to ensure that contacts between residues in the PDB can be accurately mapped to residues in our parental sequences.</p>
+<p>If you're looking for an easy way extract a residue sequence from a PDB file, perhaps as a prelude to aligning it, see <a href="#example_extract_pdb_seq">how to do it in one line</a>.</p>
+
+<h4>Generating contacts</h4>
+<p>Contacts are generated by executing the <code>schemacontacts.py</code> script.  For example, to generate contacts for the &beta;-lactamase PSE4 using the structure 1G68, do:
+</p><p>
+<pre class="commandInput">	&gt; python schemacontacts.py -pdb 1G68.pdb -msa lac-msa.txt -pdbal PSE4-1G68.txt</pre>
+<p>The output you will see looks like this:</p>
+<pre class="commandOutput">
+	# Fields are number, contacting residues i & j (in library coordinates), and residues i & j (in PDB coordinates)
+	# n	i	j	pdbi	pdbj
+	0	0	1	26	27
+	1	0	3	26	29
+	2	0	22	26	48
+	3	0	32	26	57
+	4	0	261	26	289
+	5	0	262	26	290
+	6	1	2	27	28
+	7	1	3	27	29
+	8	1	4	27	30
+	...
+</pre>
+</p>
+If one of your parent sequences comes from a PDB file, you may not need a parent-PDB alignment file.  Just make sure one of your sequences is labeled with the PDB ID (1G68, 1BTL, etc.).  Here's how to generate contacts using the structure 1BTL instead:
+</p><p>
+<pre class="commandInput">	&gt; python schemacontacts.py -pdb 1BTL.pdb -msa lac-msa.txt</pre>
+</p>
+<p>Rather than seeing these contacts on the screen, you'll want to save them in a file to avoid having to recompute them each time.  To send output to a file, use the <code>-o</code> option.  For example, the following sends output to the file <code>contacts.txt</code> (try it, since further examples will use this file!):
+<p>
+<pre class="commandInput">	&gt; python schemacontacts.py -pdb 1G68.pdb -msa lac-msa.txt -pdbal PSE4-1G68.txt -o contacts.txt</pre></p>
+
+
+
+<h3><a name="calc_energy">Calculating SCHEMA energies</a></h3>
+<p>The script <code>schemaenergy.py</code> is used to calculate SCHEMA energies.</p>
+<p>To compute SCHEMA energies, you'll need a contact file (generated above), a parent alignment (as above), and a crossover file which indicates crossover positions.  The format of the crossover file for the lactamase example is:
+<pre class="fileContents">
+# Crossover file for lactamases
+17 27 59 88 107 199 244
+</pre>
+<p>Each number, separated by whitespace, indicates the 1-based index of the first residue after the crossover, or equivalently the first residue of each fragment to be recombined.  (The initial 1 is assumed.)  Indices are relative to the parent multiple sequence alignment.  To compute the SCHEMA energy for chimera 13111111 (PSE4 for all fragments except the second, where TEM1 appears):</p>
+<pre class="commandInput">	&gt; python schemaenergy.py -msa lac-msa.txt -con contacts.txt -xo lac-xo.txt -chim 13111111 -E</pre>
+<pre class="commandOutput">
+	# chimera       E
+	13111111        4
+</pre>
+<p>To compute the SCHEMA energy for multiple chimeras, simply list them:</p>
+<pre class="commandInput">	&gt; python schemaenergy.py -msa lac-msa.txt -con contacts.txt -xo lac-xo.txt -chim 13111111 13121231 -E</pre>
+<pre class="commandOutput">
+	# chimera       E
+	13111111        4
+	13121231        29
+</pre>
+<p>Chimeras may also be listed in a file, one per line, like so:</p>
+<pre class="fileContents">
+	13111111
+	13121231
+	22321222
+	33213333
+</pre>
+<p>To calculate energies for all chimeras in the file, use the file name instead of the chimera sequence:
+<pre class="commandInput">	&gt; python schemaenergy.py -msa lac-msa.txt -con contacts.txt -xo lac-xo.txt -chim chimeras.txt -E</pre>
+<pre class="commandOutput">
+	# chimera       E
+	13111111        4
+	13121231        29
+	22321222        19
+	33213333        18
+</pre>
+</p>
+<p>If you omit the <code>-chim</code> option, the script computes energies for all possible chimeras:
+<pre class="commandInput">	&gt; python schemaenergy.py -msa lac-msa.txt -con contacts.txt -xo lac-xo.txt -E</pre>
+<pre class="commandOutput">
+	# chimera       E
+	11111111        0
+	11111112        45
+	11111113        32
+	11111121        18
+	11111122        46
+	11111123        48
+	11111131        12
+	11111132        54
+	11111133        33
+	11111211        17
+	11111212        58
+	11111213        45
+	11111221        31
+	11111222        55
+	11111223        57
+	11111231        25
+	...
+</pre>
+<p>To print mutation values (sequence or Hamming distance of a chimera to the closest parent), include the <code>-m</code> flag:
+<pre class="commandInput">	&gt; python schemaenergy.py -msa lac-msa.txt -con contacts.txt -xo lac-xo.txt -chim 13111111 13121231 -E -m</pre>
+<pre class="commandOutput">
+	# chimera       E       m
+	13111111        4       2
+	13121231        29      33
+</pre>
+
+<p>To send output to a file, use the <code>-o</code> option.  For example, the following sends output to the file <code>energies.txt</code>:
+<p>
+<pre class="commandInput">	&gt; python schemaenergy.py -msa lac-msa.txt -con contacts.txt -xo lac-xo.txt -chim 13111111 -E -o energies.txt</pre></p>
+
+
+<h3><a name="enum_libs">Enumerating libraries</a></h3>
+<p>The script <code>schemarandom.py</code> is used to enumerate average <i>&lt;E&gt;</i> and <i>&lt;m&gt;</i> for libraries.</p>
+<p>In designing a recombination library, you may want to know what the effect of choosing different crossover points is.  The <code>schemarandom.py</code> script allows you to calculate the average disruption and mutation levels for all chimeras (or a subset) in a series of libraries with different crossover points.  For example, you may wish to choose points that yield a library with high sequence diversity (high <i>&lt;m&gt;</i>) but low disruption (low <i>&lt;E&gt;</i>).  The tool RASPP can be used to find these crossover points, and you may wish to use random enumeration for comparison.</p>
+<p>For example, to enumerate <i>&lt;E&gt;</i> and <i>&lt;m&gt;</i> for 100 libraries of 7 crossovers:</p>
+<p>
+<pre class="commandInput">	&gt; python schemarandom.py -msa lac-msa.txt -con contacts.txt -libs 100 -xo 7 </pre></p>
+<p>The <code>-libs</code> option specifies the number of libraries to generate and the <code>-xo</code> option specifies the number of crossovers used to generate each library.  The output of this program looks like this:</p>
+<pre class="commandOutput">
+	# &lt;E&gt;   &lt;m&gt;     crossover points
+	62.2222 54.6301 10 19 28 34 47 187 206
+	79.2222 57.9841 66 80 221 235 247 255 259
+	78.1111 62.1632 94 128 220 225 241 252 256
+	67.6667 55.2992 8 13 135 150 175 189 221
+	69.6667 55.0725 28 166 175 184 217 252 260
+	60.7778 48.4444 143 150 175 239 247 253 260
+	60.8889 39.3333 175 218 223 228 232 236 258
+	71.2222 43.7778 13 21 29 34 80 253 260
+	74.0000 52.8839 50 81 233 240 245 251 258
+	55.4444 44.4444 9 17 23 28 33 42 99
+	# Finished in 130.50 seconds (10 libraries, 65610 chimeras)
+</pre>
+<p>The first two fields show <i>&lt;E&gt;</i> and <i>&lt;m&gt;</i>; the last field, in brackets, contains a list of crossover points.  These numbers indicate the first residue of each fragment except the first (which is always 1).</p>
+<p>To set the minimum fragment size, use the <code>-min</code> option.  For example, to constrain the fragments to be at least 50 residues long:
+<pre class="commandInput">
+	&gt; python schemarandom.py -msa lac-msa.txt -con contacts.txt -libs 100 -xo 4 -min 50
+</pre>
+<pre class="commandOutput">
+	60.8889 68.1481 [51, 105, 158, 209]
+	62.0000 68.3251 [54, 104, 158, 209]
+	62.6667 68.6008 [52, 104, 162, 212]
+	61.3333 68.2263 [52, 109, 159, 211]
+	61.7778 68.4239 [52, 107, 163, 213]
+	...
+</pre>
+</p>
+
+<p>Random generation of crossover points will generally produce different output every time due to the use of random number generation.  To get consistent output, you may seed the random number generator using the <code>-seed</code> option:</p>
+<pre class="commandInput">	&gt; python schemarandom.py -msa lac-msa.txt -con contacts.txt -libs 10 -xo 4 -seed 10</pre></p>
+<pre class="commandOutput">
+	# &lt;E&gt;   &lt;m&gt;     crossover points
+	55.2222 56.2798 [114, 147, 164, 241]
+	53.2222 24.8889 [210, 218, 227, 257]
+	...
+</pre>
+<pre class="commandInput">	&gt; python schemarandom.py -msa lac-msa.txt -con contacts.txt -libs 10 -xo 4 -seed 10</pre></p>
+<pre class="commandOutput">
+	# &lt;E&gt;   &lt;m&gt;     crossover points
+	55.2222 56.2798 [114, 147, 164, 241]
+	53.2222 24.8889 [210, 218, 227, 257]
+	...
+</pre>
+<p>Providing a different seed produces a different set of crossover points:</p>
+<pre class="commandInput">	&gt; python schemarandom.py -msa lac-msa.txt -con contacts.txt -libs 10 -xo 4 -seed 8</pre></p>
+<pre class="commandOutput">
+	# &lt;E&gt;   &lt;m&gt;     crossover points
+	63.7778 56.7078 [112, 176, 251, 256]
+	48.4444 43.1111 [13, 19, 45, 96]
+	...
+</pre>
+
+<p>As before, to send output to a file, use the <code>-o</code> option.  For example, the following sends output to the file <code>random.txt</code>:
+<pre class="commandInput">	&gt; python schemarandom.py -msa lac-msa.txt -con contacts.txt -libs 100 -xo 7 -o random.txt</pre></p>
+
+<h4>Speeding up random enumeration</h4>
+<p>Random enumeration can be very slow.  The average values <i>&lt;E&gt;</i> and <i>&lt;m&gt;</i> usually won't change much after the first hundred or so chimeras (the standard error on the mean decreases as 1 over the square root of the number of chimeras sampled), so we can sacrifice a small amount of accuracy for an enormous speedup by limiting the number of chimeras sampled in each library.  This is done using the <code>-chims</code> option.  For example, to limit the calculation to at most 200 chimeras per library:</p>
+	<p>
+<pre class="commandInput">	&gt; python schemarandom.py -msa lac-msa.txt -con contacts.txt -libs 10 -xo 7 -chims 200 </pre></p>
+<pre class="commandOutput">
+	# &lt;E&gt;   &lt;m&gt;     crossover points
+	61.0900 55.2750 10 19 28 34 47 187 206
+	79.9850 59.7800 66 80 221 235 247 255 259
+	79.4400 62.9700 94 128 220 225 241 252 256
+	68.9300 56.7450 8 13 135 150 175 189 221
+	70.1100 53.2350 28 166 175 184 217 252 260
+	59.3150 46.7000 143 150 175 239 247 253 260
+	59.8450 38.2150 175 218 223 228 232 236 258
+	71.3850 43.2600 13 21 29 34 80 253 260
+	71.1600 50.7650 50 81 233 240 245 251 258
+	55.0850 44.8650 9 17 23 28 33 42 99
+	# Finished in 3.93 seconds (10 libraries, 2000 chimeras)</pre>
+<p>The limited enumeration runs more than 30x faster (3.93 versus 130.50 seconds) while producing values differing only a few percent from the exhaustive enumeration in the first example.  Of course, such accuracy is only likely, not guaranteed.</p>
+
+<h3><a name="raspp">Computing optimal crossovers using RASPP</a></h3>
+RASPP (<em>R</em>ecombination <em>A</em>s a <em>S</em>hortest-<em>P</em>ath <em>P</em>roblem) is an algorithm which finds crossover points that minimize the energy (e.g. SCHEMA energy) of a library given constraints on fragment lengths.</p>
+<p>The <code class="module">rasppcurve</code> module works similarly to the other tools.  You must provide a multiple sequence alignment, a contact map, and the desired number of crossovers.  Optionally (it's recommended!) you may provide a minimum fragment length using the <code class="option">-min</code> option, which specifies the minimum number of residues a fragment can contain &mdash; not including residues at which all parents are identical.  This prevents RASPP from choosing trivial crossovers.  For example:</p>
+<p>
+<pre class="commandInput">	&gt; python rasppcurve.py -msa 1G68-msa.txt -con contacts.txt -xo 7 -o opt.txt -min 10</pre></p>
+<pre class="commandOutput">
+	# RASPP took 153.86 secs
+	# RASPP found 855 results
+	# RASPP found 15 unique (&lt;E&gt;,&lt;m&gt;) points
+	# RASPP curve took 107.78 secs
+	# &lt;E&gt;   &lt;m&gt;     crossover points
+	55.7778	58.6234	23 37 56 71 96 119 148 
+	50.6667	62.0735	12 25 35 49 123 142 163 
+	50.7778	63.2539	12 25 35 49 127 148 168 
+	50.7778	63.8519	12 25 35 49 127 148 171 
+	52.0000	68.1759	23 35 49 127 148 170 188 
+	52.1111	69.5585	41 56 123 137 161 177 194 
+	52.7778	69.8330	41 56 123 137 161 177 196 
+	54.7778	70.7505	23 36 54 123 148 171 194 
+	56.4444	71.9805	41 56 123 142 170 194 257 
+	58.6667	72.6635	38 56 123 148 171 193 255 
+	59.8889	74.1509	44 67 123 148 171 194 255 
+	63.4444	74.6432	44 67 123 145 170 194 252 
+	65.0000	75.9136	41 71 123 142 170 193 243 
+	66.5556	76.7337	44 71 96 123 171 193 243 
+	70.8889	77.6551	23 44 71 118 171 194 238 
+</pre>
+<p>
+<pre class="commandInput">	&gt; python schemarandom.py -msa 1G68-msa.txt -con contacts.txt -xo 7 -o rand.txt -min 10 -chims 200</pre></p>
+<pre class="commandOutput">
+	# &lt;E&gt;   &lt;m&gt;     crossover points
+	80.4100 67.9800 75 96 125 163 185 227 243
+	88.8250 66.9200 12 103 132 180 208 235 257
+	72.5950 69.1800 15 27 39 118 152 175 253
+	75.4200 53.5550 11 30 45 63 86 101 130
+	76.5050 73.9750 35 54 106 132 189 241 257
+	80.6050 65.0050 15 34 56 69 105 231 243
+	83.4700 70.4750 23 35 62 75 94 119 221
+	79.1900 59.7350 103 127 150 209 227 237 251
+	89.9600 74.8000 11 28 81 154 180 201 255
+	82.9400 70.9650 69 137 168 185 219 233 253
+	81.0250 63.9300 12 25 112 205 221 235 258
+	89.7300 72.7600 12 56 91 103 189 212 236
+	75.9250 71.6700 23 71 93 115 152 179 258
+	87.6600 74.2800 11 30 60 112 145 208 252	
+	...
+	# Finished in 5097.41 seconds (10000 libraries, 2000000 chimeras)
+</pre>
+<p>The RASPP curve and 10,000 random libraries resulting from the above commands, the contents of the files <code class="file">opt.txt</code> and <code class="file">rand.txt</code>, are plotted below.  RASPP finds crossover points producing libraries that have lower average energy, at most levels of average mutation, than randomly generated crossovers.  It does so with very high efficiency: the above RASPP computation takes less than 5 minutes, while evaluating 10,000 libraries produces inferior results and takes almost an hour and a half.
+<center>
+<img src="lac-3-e-vs-m.jpg"><p/>Figure 1: RASPP curve relative to 10,000 randomly enumerated libraries</img>
+</center>
+<p>
+
+<h2><a name="use_code">Using the Python Modules</a></h2>
+<p>If you want to perform calculations or tasks for which the prepackaged tools aren't suitable, we've provided the source code for all of them.  Here are a few examples of code to carry out useful tasks.</p>
+
+
+<h3><a name="example_extract_pdb_seq">Example 1: Printing out the residue sequence in a PDB file</a></h3>
+<p>The <code class="module">pdb.py</code> module provides several classes which are useful for parsing PDB files: <code class="object">pdb.File</code>, <code class="object">pdb.Residue</code> and <code class="object">pdb.Atom</code>.  <code class="object">pdb.File</code> objects have a <code class="method">read</code> method which reads PDB files and assembles lists of <code class="object">pdb.Residue</code> objects, each of which contains several <code class="object">pdb.Atom</code> objects.  The method <code class="method">sequence</code> takes a list of <code class="object">pdb.Residue</code> objects and returns a string of one-letter amino acids.</p>
+<p>For example, to print the residue sequence in a PDB file, run this script:</p>
+<pre>
+	# Import the PDB module
+	import pdb
+	# Open the PDB file for reading
+	pdb_file = file('1G68.pdb', 'r')
+	# Create a new pdb.File object
+	pfobj = pdb.File()
+	# Read the residues out of the PDB file using the pdb.File object
+	residues = pfobj.read(pdb_file)
+	# Print the one-letter residue sequence
+	print pdb.sequence(residues)
+	# Close the file
+	pdb_file.close()
+</pre>
+<p>You can run an equivalent (but much shorter!) program from the command line as follows:</p>
+<pre class="commandInput">	&gt; python -c "import pdb; print pdb.sequence(pdb.File().read(file('1G68.pdb','r')))"</pre>
+<pre class="commandOutput">
+	SKFQQVEQDVKAIEVSLSARIGVSVLDTQNGEYWDYNGNQRFPLTSTFKTIACAKLLYDAEQGKVNPNSTVEIKKADLVTYSPVIEKQVG
+	QAITLDDACFATMTTSDNTAANIILSAVGGPKGVTDFLRQIGDKETRLDRIEPDLNEGKLGDLRDTTTPKAIASTLNKFLFGSALSEMNQ
+	KKLESWMVNNQVTGNLLRSVLPAGWNIADRSGAGGFGARSITAVVWSEHQAPIIVSIYLAQTQASMEERNDAIVKIGHSIFDVYTS
+</pre>
+<p>We've provided an even shorter version of this for convenience (try it!):</p>
+<pre class="commandInput">	&gt; python -c "import pdb; pdb.get('1G68.pdb')"</pre>
+<pre class="commandOutput">
+	SKFQQVEQDVKAIEVSLSARIGVSVLDTQNGEYWDYNGNQRFPLTSTFKTIACAKLLYDAEQGKVNPNSTVEIKKADLVTYSPVIEKQVG
+	QAITLDDACFATMTTSDNTAANIILSAVGGPKGVTDFLRQIGDKETRLDRIEPDLNEGKLGDLRDTTTPKAIASTLNKFLFGSALSEMNQ
+	KKLESWMVNNQVTGNLLRSVLPAGWNIADRSGAGGFGARSITAVVWSEHQAPIIVSIYLAQTQASMEERNDAIVKIGHSIFDVYTS
+</pre>
+<p>You can even specify which PDB chains to extract.  Here's how to get chain B:</p>
+<pre class="commandInput">	&gt; python -c "import pdb; pdb.get('1JPZ.pdb',['B'])"</pre>
+<pre class="commandOutput">
+	TIKEMPQPKTFGELKNLPLLNTDKPVQALMKIADELGEIFKFEAPGRVTRYLSSQRLIKEACDESRFDKNLSQALKFVRDFAGDGLFTSW
+	THEKNWKKAHNILLPSFSQQAMKGYHAMMVDIAVQLVQKWERLNADEHIEVPEDMTRLTLDTIGLCGFNYRFNSFYRDQPHPFITSMVRA
+	LDEAMNKLQRANPDDPAYDENKRQFQEDIKVMNDLVDKIIADRKASGEQSDDLLTHMLNGKDPETGEPLDDENIRYQIITFLIAGHETTS
+	GLLSFALYFLVKNPHVLQKAAEEAARVLVDPVPSYKQVKQLKYVGMVLNEALRLWPTAPAFSLYAKEDTVLGGEYPLEKGDELMVLIPQL
+	HRDKTIWGDDVEEFRPERFENPSAIPQHAFKPFGNGQRACIGQQFALHEATLVLGMMLKHFDFEDHTNYELDIKETLTLKPEGFVVKAKS
+	KKIPLGGI
+</pre>
+<p>Or chains A and B:</p>
+<pre class="commandInput">	&gt; python -c "import pdb; pdb.get('1JPZ.pdb',['A','B'])"</pre>
+<pre class="commandOutput">
+	TIKEMPQPKTFGELKNLPLLNTDKPVQALMKIADELGEIFKFEAPGRVTRYLSSQRLIKEACDESRFDKNLSQALKFVRDFAGDGLFTSW
+	THEKNWKKAHNILLPSFSQQAMKGYHAMMVDIAVQLVQKWERLNADEHIEVPEDMTRLTLDTIGLCGFNYRFNSFYRDQPHPFITSMVRA
+	LDEAMNKLQRANPDDPAYDENKRQFQEDIKVMNDLVDKIIADRKASQSDDLLTHMLNGKDPETGEPLDDENIRYQIITFLIAGHETTSGL
+	LSFALYFLVKNPHVLQKAAEEAARVLVDPVPSYKQVKQLKYVGMVLNEALRLWPTAPAFSLYAKEDTVLGGEYPLEKGDELMVLIPQLHR
+	DKTIWGDDVEEFRPERFENPSAIPQHAFKPFGNGQRACIGQQFALHEATLVLGMMLKHFDFEDHTNYELDIKETLTLKPEGFVVKAKSKK
+	IPLGGITIKEMPQPKTFGELKNLPLLNTDKPVQALMKIADELGEIFKFEAPGRVTRYLSSQRLIKEACDESRFDKNLSQALKFVRDFAGD
+	GLFTSWTHEKNWKKAHNILLPSFSQQAMKGYHAMMVDIAVQLVQKWERLNADEHIEVPEDMTRLTLDTIGLCGFNYRFNSFYRDQPHPFI
+	TSMVRALDEAMNKLQRANPDDPAYDENKRQFQEDIKVMNDLVDKIIADRKASGEQSDDLLTHMLNGKDPETGEPLDDENIRYQIITFLIA
+	GHETTSGLLSFALYFLVKNPHVLQKAAEEAARVLVDPVPSYKQVKQLKYVGMVLNEALRLWPTAPAFSLYAKEDTVLGGEYPLEKGDELM
+	VLIPQLHRDKTIWGDDVEEFRPERFENPSAIPQHAFKPFGNGQRACIGQQFALHEATLVLGMMLKHFDFEDHTNYELDIKETLTLKPEGF
+	VVKAKSKKIPLGGI
+</pre>
+<h3>Example 2: Doing what the tools do</h3>
+<p>A quick look at the code for <code class="module">schemacontacts</code> or any of the other modules will reveal that most of the module is dedicated to processing user input from the command line, checking it and printing messages.  If you're comfortable with Python, most of the functionality contained in the tools can be reproduced with just a few lines of code.  For example, here's how to create a contact map, compute the SCHEMA energies of 100 random libraries, and print a RASPP curve:</p>
+<pre class="file">
+	#! /usr/local/bin/python
+
+	import sys, os, string, random
+	# Fill in and uncomment if you want to run this from somewhere other than
+	# the directory containing pdb.py, schema.py etc.
+	# sys.path.append("c:/...")
+	import pdb, schema, raspp
+
+	def make_random_chimera(num_parents, num_fragments):
+		# Compute the library size
+		library_size = num_parents**num_fragments
+		# Pick a random chimera number
+		chim_num = random.randint(0,library_size-1)
+		# The next two lines turn chim_num into a chimera block pattern 
+		# (e.g., 0 -> '11111111', 1 -> '11111112', 2 -> '11111113'...)
+		n2c = schema.base(chim_num, num_parents)
+		chimera_blocks = ''.join(['1']*(num_fragments-len(n2c))+['%d'%(int(x)+1,) for x in n2c])
+		return chimera_blocks
+
+	def main():
+		# Read the parents
+		parent_list = schema.readMultipleSequenceAlignmentFile(file('lac-2-msa.txt', 'r'))
+		parents = [p for (key,p) in parent_list]
+		pdb_alignment_list = schema.readMultipleSequenceAlignmentFile(file('PSE4-1G68.txt', 'r'))
+		pdb_alignment = [p for (key,p) in pdb_alignment_list]
+
+		# Get the contacts
+		pdb_residues = pdb.File().read(file('pdbs/1G68.pdb', 'r'))
+		residues = schema.alignPDBResidues(pdb_residues, pdb_alignment[1], pdb_alignment[0], parents[0], ['A',' '])
+		pdb_contacts = schema.getPDBContacts(residues, 4.5)
+		contacts = schema.getSCHEMAContacts(pdb_contacts, parents)
+
+		# Execute RASPP and compute a RASPP curve
+		energies = raspp.make_4d_energies(contacts, parents)
+		avg_energies = raspp.calc_average_energies(energies, parents)
+		print "Running RASPP..."
+		raspp_results = raspp.RASPP(avg_energies, parents, 3, 20)
+		print "Making RASPP curve..."
+		curve = raspp.curve(raspp_results, parents, 2)
+		print "RASPP curve:"
+		for (E, m, crossovers) in curve:
+			print m, E, crossovers
+
+		print "Random-crossover libraries:"
+		for num_libraries in range(20): # 20 libraries
+			random_crossovers = schema.generateRandomCrossovers(len(parents[0]), 3, 40)
+			# Reduce the contact list by eliminating unbreakable contacts given these crossover points
+			filtered_contacts = schema.getSCHEMAContactsWithCrossovers(contacts, parents, random_crossovers)
+			# Fragment lists, [(i,j)...] delimiting each fragment, are easier to deal with than crossovers
+			fragments = schema.getFragments(random_crossovers, parents[0])
+			# Make empty lists for energy and mutation.
+			Es = []
+			ms = []
+			for n in range(100): # 100 samples from each library
+				chimera_blocks = make_random_chimera(len(parents), len(random_crossovers)+1)
+				E = schema.getChimeraDisruption(chimera_blocks, filtered_contacts, fragments, parents)
+				m = schema.getChimeraShortestDistance(chimera_blocks, fragments, parents)
+				Es.append(E)
+				ms.append(m)
+			print schema.mean(Es), schema.mean(ms), random_crossovers
+
+	# Run the main program
+	main()
+<pre>
+<!--
+<h3>Example 3: Printing out an informative representation of a library</h3>
+<pre class="file">
+import schema
+def generateLibrary(parent_list, crossovers):
+    """Prints out an informative representation of a library."""
+    start = 1
+    frags = 1
+	fragments = schema.getFragments(crossovers, parent_list[0])
+    for (i,j) in fragments:
+        print "# Fragment %d: residues %d to %d (%d total)" % (frags, i+1, j+1, j-i)
+        for (k,s) in parent_list:
+            print "%s\t%s" % (k, s[i:j])
+        print ''
+        start = j+1
+        frags += 1
+</pre>
+-->
+
+
+<h2><a name="references">References</a></h2>
+<ol>
+<li>Voigt, C. et al., "Protein building blocks preserved by recombination," <journal>Nature Structural Biology</journal> 9(7):553-558 (2002).</li>
+<li>Meyer, M. et al., "Library analysis of SCHEMA-guided recombination," <journal>Protein Science</journal> 12:1686-1693 (2003).</li>
+<li>Silberg, J. et al., "SCHEMA-guided protein recombination," <journal>Methods in Enzymology</journal> 388:35-42 (2004).</li>
+<li>Otey, C. et al., "Functional evolution and structural conservation in chimeric cytochromes P450: Calibrating a structure-guided approach," <journal>Chemistry & Biology</journal> 11:1-20 (2004).</li>
+<li>Endelman, J. et al., "Site-directed protein recombination as a shortest-path problem," <journal>Protein Engineering, Design & Selection</journal> 17(7):589-594 (2005).</li>
+</ol>
+</html>

@@ -1,0 +1,2 @@
+# Crossover file for lactamases
+17 27 59 88 107 199 244

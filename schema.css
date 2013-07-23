@@ -1,0 +1,123 @@
+body, p, h1, h2, h3, h4, h5, ul, ol, li, .breadCrumb, .backToTop {
+	font-family : Verdana,  Arial, Helvetica, sans-serif;
+}
+body {
+	background-color: #FFFFFF;
+	margin-left: 10%;
+	margin-right: 10%;
+	margin-top: 0px;
+	margin-bottom: 3px;
+}
+p {
+	padding-top: 0px;
+	padding-right: 0px;
+	padding-bottom: 0px;
+	padding-left: 0px;
+	color: #00000000;
+}
+h1 {
+	padding-top: 2px;
+	padding-right: 4px;
+	padding-bottom: 4px;
+	padding-left: 10px ;
+	color: #000066;
+	//background-color: #99CC99;
+}
+
+h2 {
+	padding-top: 2px;
+	padding-right: 4px;
+	padding-bottom: 4px;
+	padding-left: 10px ;
+	color: white;
+	background-color: #3366FF;
+}
+
+.breadCrumb {
+	margin-top: -10px;
+	font-size: 80%;
+	color: gray;
+}
+.breadCrumb a {
+	color: gray;
+	text-decoration: none;
+}
+.backToTop {
+	font-size: 80%;
+	color: gray;
+	text-align: right;
+	text-decoration: none;
+}
+
+.commandTable {
+	margin-left: auto;
+	margin-right: auto;
+	width: 90%;
+	border: 0;
+}
+
+.commandOptionHeader {
+	width: 10%
+}
+
+.commandArgumentHeader {
+	width: 30%;
+}
+
+.commandExampleHeader {
+	width: 20%
+}
+
+.commandNotesHeader {
+	width:40%
+}
+.commandOption {
+	font-family: "Courier New", monospace;
+}
+
+.oddOption {
+	background-color: #EEEEEE;
+}
+.evenOption {
+}
+
+pre.commandInput {
+	color: #CC0000;
+}
+
+pre.commandOutput {
+	color: blue;
+}
+
+journal {
+	font-style: italic;
+}
+
+.fileContents {
+	font-family: "Courier New", monospace;
+}
+
+code.method {
+	font-family: "Courier New", monospace;
+}
+
+code.module {
+	font-family: "Courier New", monospace;
+}
+
+code.object {
+	font-family: "Courier New", monospace;
+}
+
+code.file {
+	font-family: "Courier New", monospace;
+}
+
+code.variable {
+	font-family: "Courier New", monospace;
+}
+
+img.figure {
+	align: center;
+	width: 50%;
+}
