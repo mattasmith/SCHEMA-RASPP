@@ -341,7 +341,7 @@ def averageMutation(fragments, parents):
 	n = len(fragments)
 	# Create a mutation matrix: how many mutations
 	mut_dict = mutationMatrix(fragments, parents)			
-	for i in range(p**n):
+	for i in xrange(p**n):
 		# The next two lines turn i into a chimera block pattern 
 		# (e.g., 0 -> '11111111', 1 -> '11111112', 2 -> '11111113'...)
 		n2c = base(i,p)
