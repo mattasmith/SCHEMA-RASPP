@@ -204,7 +204,7 @@ def main(args):
 		n = len(fragments)
 		Es = []
 		ms = []
-		for i in range(len(parents)**len(fragments)):
+		for i in xrange(len(parents)**len(fragments)):
 			# The next two lines turn i into a chimera block pattern 
 			# (e.g., 0 -> '11111111', 1 -> '11111112', 2 -> '11111113'...)
 			n2c = schema.base(i,p)
